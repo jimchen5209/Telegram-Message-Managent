@@ -34,17 +34,22 @@ def on_chat_message(msg):
         dlog=dlog+"[EDITED"+str(msg['edit_date'])+"]"
     except:
         time.sleep(0)
-    fuser= bot.getChatMember(chat_id,msg['from']['id'])
-    fnick = fuser['user']['first_name']
     try:
-        fnick = fnick + ' ' + fuser['user']['last_name']
+        fuser= bot.getChatMember(chat_id,msg['from']['id'])
     except:
-        fnick = fnick
-    try:
-        fnick= fnick +"@"+ fuser['user']['username']
-    except:
-        fnick= fnick
-    fuserid = str(fuser['user']['id'])
+        fnick = "Channel Admin"
+        fuserid = None
+    else:
+        fnick = fuser['user']['first_name']
+        try:
+            fnick = fnick + ' ' + fuser['user']['last_name']
+        except:
+            fnick = fnick
+        try:
+            fnick= fnick +"@"+ fuser['user']['username']
+        except:
+            fnick= fnick
+        fuserid = str(fuser['user']['id'])
     if chat_type == 'private':
         dlog = dlog + "[Private]["+str(msg['message_id'])+"]"
         try:
@@ -264,6 +269,69 @@ def on_chat_message(msg):
         log("[Debug] Raw sent data:"+str(dre))
         clog('[Info][',msg['message_id'],'] I left the ', chat_type,':',msg['chat']['title'],'(',chat_id,')')
         bot.leaveChat(chat_id)
+    elif chat_type == 'channel':
+        dlog = dlog + "["+str(msg['message_id'])+"]"
+        try:
+            reply_to = msg['reply_to_message']
+        except:
+            dlog = dlog
+        else: 
+            dlog = dlog + "( Reply to "+str(msg['reply_to_message']['message_id'])+" )"
+        if content_type == 'text':
+            dlog = dlog+ ' ' + fnick 
+            if fuserid:
+                dlog = dlog + " ( "+fuserid+" )"
+            dlog = dlog + " in channel "+msg['chat']['title']+' ( '+str(chat_id)+ ' ): ' + msg['text']
+        else:
+            dlog = dlog + ' ' + fnick 
+            if fuserid:
+                dlog = dlog + " ( "+fuserid+" )"
+            dlog = dlog +" in channel"+msg['chat']['title']+' ( '+str(chat_id)+ ' ) sent a '+ content_type
+        clog(dlog)
+        if content_type == 'photo':
+            flog = "[Photo]"
+            photo_array=msg['photo']
+            photo_array.reverse()
+            try:
+                flog = flog + "Caption = " +msg['caption'] +" ,FileID:"+ photo_array[0]['file_id']
+            except:
+                flog = flog +"FileID:"+ photo_array[0]['file_id']
+            clog(flog)
+        elif content_type == 'audio':
+            flog = "[Audio]"
+            try:
+                flog = flog + "Caption = " +msg['caption'] +" ,FileID:"+ msg['audio']['file_id']
+            except:
+                flog = flog +"FileID:"+ msg['audio']['file_id']
+            clog(flog)
+        elif content_type == 'document':
+            flog = "[Document]"
+            try:
+                flog = flog + "Caption = " +msg['caption'] +" ,FileID:"+ msg['document']['file_id']
+            except:
+                flog = flog +"FileID:"+ msg['document']['file_id']
+            clog(flog)
+        elif content_type == 'video':
+            flog = "[Video]"
+            try:
+                flog = flog + "Caption = " +msg['caption'] +" ,FileID:"+ msg['video']['file_id']
+            except:
+                flog = flog +"FileID:"+ msg['video']['file_id']
+            clog(flog)
+        elif content_type == 'voice':
+            flog = "[Voice]"
+            try:
+                flog = flog + "Caption = " +msg['caption'] +" ,FileID:"+ msg['voice']['file_id']
+            except:
+                flog = flog +"FileID:"+ msg['voice']['file_id']
+            clog(flog)
+        elif content_type == 'sticker':
+            flog = "[Sticker]"
+            try:
+                flog = flog + "Caption = " +msg['caption'] +" ,FileID:"+ msg['sticker']['file_id']
+            except:
+                flog = flog +"FileID:"+ msg['sticker']['file_id']
+            clog(flog)
 
 def inlinekeyboardbutton(replyable):
     if replyable == True:
@@ -309,10 +377,10 @@ def FTC(chat_id,msg,query_id,mwik):
         bot.answerCallbackQuery(query_id, text='無法轉寄信息:\n\n'+str(val).split(',')[0].replace('(','').replace("'",""), show_alert=True)
         clog('[ERROR] Unable to forward message to'+Channel_username+' : '+str(val).split(',')[0].replace('(','').replace("'",""))
         return
-    bot.answerCallbackQuery(query_id, text='操作已完成...', show_alert=True)
+    bot.answerCallbackQuery(query_id, text='操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action', show_alert=True)
     clog('[Info] Successfully forwarded message to'+Channel_username)
     msg_idf = telepot.message_identifier(mwik)
-    bot.editMessageText(msg_idf, '操作已完成')
+    bot.editMessageText(msg_idf, '操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action')
     return
 
 def PFTC(chat_id,msg,content_type,query_id,mwik):
