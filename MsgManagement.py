@@ -20,11 +20,13 @@ except:
 config = eval(fs.read())
 fs.close()
 TOKEN = config["TOKEN"]
-OWNER_ID = config["OWNER_ID"]   #Insert your user ID here.
-Channel_username = config["Channel_username"] #Insert Channel's username here.
+OWNER_ID = config["OWNER_ID"]   
+Channel_username = config["Channel_username"] 
 Debug = config["Debug"]
+replyorg = {}
 
 def on_chat_message(msg):
+    global replyorg
     content_type, chat_type, chat_id = telepot.glance(msg)
     bot_me= bot.getMe()
     username= bot_me['username'].replace(' ','')
@@ -142,6 +144,7 @@ def on_chat_message(msg):
                             markup = inlinekeyboardbutton(False)
                         else:
                             markup = inlinekeyboardbutton(True)
+                            replyorg[msg['message_id']] = msg
                         dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼', reply_markup=markup,reply_to_message_id=msg['message_id'])
                         log("[Debug] Raw sent data:"+str(dre))
                 else:
@@ -151,6 +154,7 @@ def on_chat_message(msg):
                         markup = inlinekeyboardbutton(False)
                     else:
                         markup = inlinekeyboardbutton(True)
+                        replyorg[msg['id']] = msg
                     dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼', reply_markup=markup,reply_to_message_id=msg['message_id'])
                     log("[Debug] Raw sent data:"+str(dre))
         else:
@@ -162,9 +166,6 @@ def on_chat_message(msg):
                 dre = bot.sendMessage(OWNER_ID,fnick + "編輯了訊息")
                 log("[Debug] Raw sent data:"+str(dre))
             dre = bot.forwardMessage(OWNER_ID,chat_id,msg['message_id'])
-            log("[Debug] Raw sent data:"+str(dre))
-            markup = inlinekeyboardbutton(False)
-            dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼', reply_markup=markup,reply_to_message_id=msg['message_id'])
             log("[Debug] Raw sent data:"+str(dre))
             return
     elif chat_type == 'group' or chat_type == 'supergroup':
@@ -364,7 +365,7 @@ def on_callback_query(msg):
     elif data == 'PFTC':
         PFTC(chat_id,orginal_message,content_type,query_id,message_with_inline_keyboard)
     elif data == 'Reply':
-        Reply(chat_id,orginal_message,query_id,message_with_inline_keyboard,orginal_message['reply_to_message']['message_id'])
+        Reply(chat_id,orginal_message,query_id,message_with_inline_keyboard,orginal_message)
     elif data == 'cancel':
         cancelquery(message_with_inline_keyboard)
 
@@ -462,13 +463,21 @@ def PFTC(chat_id,msg,content_type,query_id,mwik):
     bot.editMessageText(msg_idf, '操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action')
     return
 
-def Reply(chat_id,msg,query_id,mwik,reply_to_id):
+def Reply(chat_id,msg,query_id,mwik,orginalmsg):
+    global replyorg
+    try:
+        reply_to_id = replyorg[orginalmsg['message_id']]['reply_to_message']['forward_from']['id']
+    except:
+        tp, val, tb = sys.exc_info()
+        bot.answerCallbackQuery(query_id, text='操作已過期\n\n{0}'.format(str(val).split(',')[0].replace('(','').replace("'","")), show_alert=True)
+        return
     bot.sendMessage(reply_to_id,'管理員對您信息的回覆：')
     dre = bot.forwardMessage(reply_to_id,chat_id,msg['message_id'])
     log("[Debug] Raw sent data:"+str(dre))
     bot.answerCallbackQuery(query_id, text='操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action', show_alert=True)
     msg_idf = telepot.message_identifier(mwik)
     bot.editMessageText(msg_idf, '操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action')
+    del replyorg[orginalmsg['message_id']]
     return
 
 def cancelquery(mwik):
