@@ -126,12 +126,21 @@ def on_chat_message(msg):
             try:
                 reply_to = msg['reply_to_message']
             except:
+                if content_type == "text":
+                    if msg['text'] == '/start':
+                        dre = bot.sendMessage(chat_id, '您是管理員,您將會收到其他用戶傳給我的訊息,您可以管理這些訊息並選擇要不要轉寄到頻道\n\n本bot將轉寄的頻道為 '+Channel_username,reply_to_message_id=msg['message_id'])
+                        log("[Debug] Raw sent data:"+str(dre))
+                        return
                 markup = inlinekeyboardbutton(False)
                 dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼', reply_markup=markup,reply_to_message_id=msg['message_id'])
                 log("[Debug] Raw sent data:"+str(dre))
                 return
             else:
                 if content_type == "text":
+                    if msg['text'] == '/start':
+                        dre = bot.sendMessage(chat_id, '您是管理員,您將會收到其他用戶傳給我的訊息,您可以管理這些訊息並選擇要不要轉寄到頻道\n\n本bot將轉寄的頻道為 '+Channel_username,reply_to_message_id=msg['message_id'])
+                        log("[Debug] Raw sent data:"+str(dre))
+                        return
                     if msg['text'] == '/action':
                         markup = inlinekeyboardbutton(False)
                         dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼', reply_markup=markup,reply_to_message_id=reply_to['message_id'])
@@ -177,6 +186,12 @@ def on_chat_message(msg):
             else:
                 dre = bot.sendMessage(OWNER_ID,fnick + "編輯了訊息")
                 log("[Debug] Raw sent data:"+str(dre))
+            if content_type =="text":
+                if msg['text'] == '/start':
+                    dre = bot.sendMessage(chat_id, '歡迎使用投稿系統,您傳給我的任何訊息都會被轉寄給管理員,管理員可以選擇要不要轉寄到頻道\n\n本bot可能轉寄的頻道為 '+Channel_username,reply_to_message_id=msg['message_id'])
+                    log("[Debug] Raw sent data:"+str(dre))
+                    return
+
             dre = bot.forwardMessage(OWNER_ID,chat_id,msg['message_id'])
             log("[Debug] Raw sent data:"+str(dre))
             markup = inlinekeyboardbutton(False)
