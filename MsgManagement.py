@@ -143,8 +143,14 @@ def on_chat_message(msg):
                         except:
                             markup = inlinekeyboardbutton(False)
                         else:
-                            markup = inlinekeyboardbutton(True)
-                            replyorg[msg['message_id']] = msg
+                            if reply_to_id == chat_id or reply_to_id == bot_me['id']:
+                                markup = inlinekeyboardbutton(False)
+                                dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼\n\n(此訊息無法被回覆)', reply_markup=markup,reply_to_message_id=msg['message_id'])
+                                log("[Debug] Raw sent data:"+str(dre))
+                                return
+                            else:
+                                markup = inlinekeyboardbutton(True)
+                                replyorg[msg['message_id']] = msg
                         dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼', reply_markup=markup,reply_to_message_id=msg['message_id'])
                         log("[Debug] Raw sent data:"+str(dre))
                 else:
@@ -153,8 +159,14 @@ def on_chat_message(msg):
                     except:
                         markup = inlinekeyboardbutton(False)
                     else:
-                        markup = inlinekeyboardbutton(True)
-                        replyorg[msg['id']] = msg
+                        if reply_to_id == chat_id or reply_to_id == bot_me['id']:
+                            markup = inlinekeyboardbutton(False)
+                            dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼\n\n(此訊息無法被回覆)', reply_markup=markup,reply_to_message_id=msg['message_id'])
+                            log("[Debug] Raw sent data:"+str(dre))
+                            return
+                        else:
+                            markup = inlinekeyboardbutton(True)
+                            replyorg[msg['message_id']] = msg
                     dre = bot.sendMessage(chat_id, '你想要對這信息做甚麼', reply_markup=markup,reply_to_message_id=msg['message_id'])
                     log("[Debug] Raw sent data:"+str(dre))
         else:
@@ -167,6 +179,10 @@ def on_chat_message(msg):
                 log("[Debug] Raw sent data:"+str(dre))
             dre = bot.forwardMessage(OWNER_ID,chat_id,msg['message_id'])
             log("[Debug] Raw sent data:"+str(dre))
+            markup = inlinekeyboardbutton(False)
+            dre = bot.sendMessage(OWNER_ID, '你想要對這信息做甚麼', reply_markup=markup,reply_to_message_id=dre['message_id'])
+            log("[Debug] Raw sent data:"+str(dre))
+            return
             return
     elif chat_type == 'group' or chat_type == 'supergroup':
         dlog = dlog + "["+str(msg['message_id'])+"]"
@@ -339,7 +355,7 @@ def inlinekeyboardbutton(replyable):
         markup = InlineKeyboardMarkup(inline_keyboard=[
                                 [InlineKeyboardButton(text='直接轉寄到頻道', callback_data='FTC')],
                                 [InlineKeyboardButton(text='匿名轉寄到頻道', callback_data='PFTC')],
-                                [InlineKeyboardButton(text='回覆他', callback_data='Reply')],
+                                [InlineKeyboardButton(text='回覆訊息擁有者(可能會失敗)', callback_data='Reply')],
                                 [InlineKeyboardButton(text='取消', callback_data='cancel')],
                             ])
     else:
@@ -361,15 +377,15 @@ def on_callback_query(msg):
     clog("["+time.strftime("%Y/%m/%d-%H:%M:%S").replace("'","")+"][Info]["+str(query_id)+"] Callback query form "+str(from_id)+" to "+str(orginal_message['message_id'])+" :"+ data)
 
     if data == 'FTC':
-        FTC(chat_id,orginal_message,query_id,message_with_inline_keyboard)
+        FTC(chat_id,orginal_message,query_id,message_with_inline_keyboard,orginal_message)
     elif data == 'PFTC':
-        PFTC(chat_id,orginal_message,content_type,query_id,message_with_inline_keyboard)
+        PFTC(chat_id,orginal_message,content_type,query_id,message_with_inline_keyboard,orginal_message)
     elif data == 'Reply':
         Reply(chat_id,orginal_message,query_id,message_with_inline_keyboard,orginal_message)
     elif data == 'cancel':
-        cancelquery(message_with_inline_keyboard)
+        cancelquery(message_with_inline_keyboard,orginal_message)
 
-def FTC(chat_id,msg,query_id,mwik):
+def FTC(chat_id,msg,query_id,mwik,orginalmsg):
     try:
         dre = bot.forwardMessage(Channel_username,chat_id,msg['message_id'])
         log("[Debug] Raw sent data:"+str(dre))
@@ -382,9 +398,13 @@ def FTC(chat_id,msg,query_id,mwik):
     clog('[Info] Successfully forwarded message to'+Channel_username)
     msg_idf = telepot.message_identifier(mwik)
     bot.editMessageText(msg_idf, '操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action')
+    try:
+        del replyorg[orginalmsg['message_id']]
+    except:
+        time.sleep(0)
     return
 
-def PFTC(chat_id,msg,content_type,query_id,mwik):
+def PFTC(chat_id,msg,content_type,query_id,mwik,orginalmsg):
     try:
         if content_type == 'text':
             dre = bot.sendMessage(Channel_username,msg['text'])
@@ -461,6 +481,10 @@ def PFTC(chat_id,msg,content_type,query_id,mwik):
     clog('[Info] Successfully sent message to'+Channel_username)
     msg_idf = telepot.message_identifier(mwik)
     bot.editMessageText(msg_idf, '操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action')
+    try:
+        del replyorg[orginalmsg['message_id']]
+    except:
+        time.sleep(0)
     return
 
 def Reply(chat_id,msg,query_id,mwik,orginalmsg):
@@ -471,18 +495,28 @@ def Reply(chat_id,msg,query_id,mwik,orginalmsg):
         tp, val, tb = sys.exc_info()
         bot.answerCallbackQuery(query_id, text='操作已過期\n\n{0}'.format(str(val).split(',')[0].replace('(','').replace("'","")), show_alert=True)
         return
-    bot.sendMessage(reply_to_id,'管理員對您信息的回覆：')
-    dre = bot.forwardMessage(reply_to_id,chat_id,msg['message_id'])
-    log("[Debug] Raw sent data:"+str(dre))
-    bot.answerCallbackQuery(query_id, text='操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action', show_alert=True)
-    msg_idf = telepot.message_identifier(mwik)
-    bot.editMessageText(msg_idf, '操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action')
-    del replyorg[orginalmsg['message_id']]
+    try:
+        bot.sendMessage(reply_to_id,'管理員對您信息的回覆：')
+        dre = bot.forwardMessage(reply_to_id,chat_id,msg['message_id'])
+        log("[Debug] Raw sent data:"+str(dre))
+    except:
+        tp, val, tb = sys.exc_info()
+        bot.answerCallbackQuery(query_id, text='操作失敗\n\n{0}'.format(str(val).split(',')[0].replace('(','').replace("'","")), show_alert=True)
+    else:
+        bot.answerCallbackQuery(query_id, text='操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action', show_alert=True)
+        msg_idf = telepot.message_identifier(mwik)
+        bot.editMessageText(msg_idf, '操作已完成\n\n若想要再次對訊息操作請回復訊息並打/action')
+        del replyorg[orginalmsg['message_id']]
     return
 
-def cancelquery(mwik):
+def cancelquery(mwik,orginalmsg):
     msg_idf = telepot.message_identifier(mwik)
     bot.editMessageText(msg_idf, '操作已被取消\n\n若想要再次對訊息操作請回復訊息並打/action')
+    try:
+        del replyorg[orginalmsg['message_id']]
+    except:
+        time.sleep(0)
+    return
 
 def clog(text):
     print(text)
