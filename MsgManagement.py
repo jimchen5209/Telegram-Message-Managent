@@ -299,7 +299,7 @@ def on_chat_message(msg):
         #Auto leave group
         dre = bot.sendMessage(chat_id,'I am not belong to here.')
         log("[Debug] Raw sent data:"+str(dre))
-        clog('[Info][',msg['message_id'],'] I left the ', chat_type,':',msg['chat']['title'],'(',chat_id,')')
+        clog('[Info]['+msg['message_id']+'] I left the '+ chat_type,':'+msg['chat']['title']+'('+chat_id+')')
         bot.leaveChat(chat_id)
     elif chat_type == 'channel':
         dlog = dlog + "["+str(msg['message_id'])+"]"
