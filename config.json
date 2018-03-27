@@ -1,6 +1,0 @@
-{
-    "TOKEN":"", #Insert your telegram bot token here.
-    "OWNER_ID" : ,  #Insert your user ID here.
-    "Channel_username" : "", #Insert Channel's username here.
-    "Debug" : False #If true,raw debug info will be logged into -debug.log file
-}
