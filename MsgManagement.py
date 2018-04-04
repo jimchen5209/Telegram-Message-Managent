@@ -23,8 +23,8 @@ try:
             "OWNER": [135405898], 
             "//Channel_username": "Insert Channel's username to foward here.",
             "Channel_username": "", 
-            "//Posting_group": "A group id using to post otherwise I will leave automaticlly.",
-            "Posting_group": -1,
+            "//Posting_group": "A list of group id using to post otherwise I will leave automaticlly.",
+            "Posting_group": [-1],
             "//Debug": "If true,raw debug info will be logged into -debug.log file",
             "Debug": True 
         }
@@ -46,8 +46,8 @@ except IndexError:
     "OWNER": [], 
     "//Channel_username": "Insert Channel's username to foward here.",
     "Channel_username": "",  
-    "//Posting_group": "A group id using to post otherwise I will leave automaticlly.",
-    "Posting_group": -1,
+    "//Posting_group": "A list of group id using to post otherwise I will leave automaticlly.",
+    "Posting_group": [],
     "//Debug": "If true,raw debug info will be logged into -debug.log file",
     "Debug": false 
 
@@ -180,7 +180,7 @@ async def on_chat_message(msg):
             logger.log("[Debug] Raw sent data:"+str(dre))
             return
     elif chat_type == 'group' or chat_type == 'supergroup':
-        if chat_id == config.Posting_group:
+        if chat_id in config.Posting_group:
             if content_type == 'new_chat_member':
                 if msg['new_chat_member']['id'] == bot_me.id:
                     dre = await bot.sendMessage(chat_id, '歡迎使用投稿系統，如果您要在這裡投稿，請在要投稿的訊息並附上 #投稿\n請注意： #投稿 提交的優先度為被回覆的訊息>直接帶有 #投稿 的訊息\n\n本bot可能轉寄的頻道為 ' +
