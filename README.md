@@ -1,4 +1,4 @@
-# Telegram-Message-Managent
+# Telegram-Message-Managent [![CircleCI](https://circleci.com/gh/jimchen5209/Telegram-Message-Managent.svg?style=svg)](https://circleci.com/gh/jimchen5209/Telegram-Message-Managent)
 
 #To USE:
 
@@ -6,9 +6,9 @@
 
 2.Install Python 3.5 or higher on your PC.
 
-3.Open command line,and type "pip install telepot".
+3.Open command line,and type "pip install -r requirements.txt".
 
-  For Windows: Go to 'python folder'\Scripts\ Shift+right_click to open Command Shell here and type "pip install telepot".
+  For Windows: Go to 'python folder'\Scripts\ Shift+right_click to open Command Shell here and type "pip install -r requirements.txt".
   
 4.Edit config.json.
 
