@@ -1,6 +1,9 @@
 # Telegram-Message-Managent [![CircleCI](https://circleci.com/gh/jimchen5209/Telegram-Message-Managent.svg?style=svg)](https://circleci.com/gh/jimchen5209/Telegram-Message-Managent)
 
-#To USE:
+> [!NOTE]
+> This project is no longer being maintained.
+
+## To USE:
 
 1.Talk to @BotFather to create a bot and get it's token on telegram.
 
